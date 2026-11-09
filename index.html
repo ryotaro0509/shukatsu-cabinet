@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="業界・会社・役職のタンスを開けていくと、インターンや内定までのロードマップを3通り提示する就活ツール。国内の就活とキャリアフォーラムに対応。">
+<title>就活キャビネット</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a honey-wood chest of drawers (industries) → a wooden bookshelf of big companies → role index cards → three roadmap routes. */
+:root{
+  --bg:#ecebe6; --ink:#211c18; --muted:#635b54;
+  --line:#c9c1b6; --card:#fdfcf9; --rule:#c3d5e6; --red:#c13f2e;
+  --brass:#9a7330; --accent:#2c5c4f; --accent-soft:#d9e6e0;
+  --wood:#d08a45; --wood-2:#bb7433; --wood-hi:rgba(255,236,200,.35); --wood-deep:#5a2e0e;
+  --wood-top:#e3a35e; --wood-top-2:#c98742; --wood-side:#a8622a; --wood-side-2:#8a4c1d; --wood-ink:#5a2c0b;
+  --wood-back:#7a4318; --wood-back-2:#5e3110;
+  --grain:rgba(110,50,10,.20); --grain-2:rgba(255,230,190,.12);
+  --b1:#1f3b57; --b2:#6b1f24; --b3:#2f4a35; --b4:#3c2f4f; --b5:#8a6a2e; --b6:#2a2a2a; --b-ink:#f3e9d4; --b-gold:#d4b06a;
+  --display:"Dela Gothic One","Hiragino Kaku Gothic StdN",sans-serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151311; --ink:#ebe5de; --muted:#a39a90; --line:#3a342e; --card:#1f1c19; --red:#e26b59;
+  --brass:#c9a45a; --accent:#82bca8; --accent-soft:#22342e;
+  --wood:#b8773a; --wood-2:#a0632b; --wood-hi:rgba(255,226,180,.22); --wood-deep:#3e1f08;
+  --wood-top:#c88a48; --wood-top-2:#ad6f33; --wood-side:#8a4f20; --wood-side-2:#6e3c15; --wood-back:#4f2a0e; --wood-back-2:#3a1e09; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151311; --ink:#ebe5de; --muted:#a39a90; --line:#3a342e; --card:#1f1c19; --red:#e26b59;
+  --brass:#c9a45a; --accent:#82bca8; --accent-soft:#22342e;
+  --wood:#b8773a; --wood-2:#a0632b; --wood-hi:rgba(255,226,180,.22); --wood-deep:#3e1f08;
+  --wood-top:#c88a48; --wood-top-2:#ad6f33; --wood-side:#8a4f20; --wood-side-2:#6e3c15; --wood-back:#4f2a0e; --wood-back-2:#3a1e09; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:36px;width:100%}
+h1,h2,h3{text-wrap:balance;margin:0}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.note{font-size:12.5px;color:var(--muted);margin:0;max-width:60em}
+
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px 32px}
+header h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,5vw,46px);line-height:1.1;letter-spacing:.02em}
+header p{margin:8px 0 0;color:var(--muted);max-width:36em}
+.profile{display:flex;flex-direction:column;gap:10px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.seg span.label{width:5.5em}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 12px;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.tabs{display:flex;flex-wrap:wrap;border-bottom:2px solid var(--ink)}
+.tab{border:none;background:transparent;padding:10px 18px;font-weight:700;cursor:pointer;border-radius:4px 4px 0 0;font-size:15px}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tab small{display:block;font-weight:400;font-size:11.5px;opacity:.75}
+
+.step-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.step-head .n{font-family:var(--mono);font-size:12px;color:var(--brass)}
+.step-head h2{font-size:19px;font-weight:700}
+.step-head .hint{font-size:13px;color:var(--muted)}
+
+/* forums */
+.forums{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:16px}
+.ticket{text-align:left;cursor:pointer;border:1px dashed var(--line);background:var(--card);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ticket[aria-pressed="true"]{border:2px solid var(--accent);box-shadow:0 6px 16px -10px rgba(0,0,0,.5)}
+.ticket .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ticket b{font-size:17px}
+.ticket .count{font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:999px;background:var(--accent-soft)}
+.ticket .count.hot{background:var(--red);color:var(--card)}
+.ticket .meta{font-size:13px;color:var(--muted)}
+.ticket .date{font-family:var(--mono);font-size:13px}
+
+/* chest: oblique 2.5D — side face left, top face above, drawer grid in front */
+.stage{display:flex;justify-content:center}
+.chest{--D:34px;--T:24px;position:relative;width:100%;max-width:560px;padding:var(--T) 0 0 var(--D);filter:drop-shadow(0 22px 18px rgba(0,0,0,.28))}
+.c-top{position:absolute;inset:0 0 auto 0;height:calc(var(--T) + 1px);clip-path:polygon(0 0,calc(100% - var(--D)) 0,100% 100%,var(--D) 100%);
+  background:repeating-linear-gradient(176deg,transparent 0 5px,var(--grain) 5px 6px,transparent 6px 14px),linear-gradient(90deg,var(--wood-top-2),var(--wood-top))}
+.c-side{position:absolute;left:0;top:0;bottom:0;width:calc(var(--D) + 1px);clip-path:polygon(0 0,100% var(--T),100% 100%,0 calc(100% - var(--T)));
+  background:repeating-linear-gradient(180deg,transparent 0 7px,var(--grain) 7px 8px,transparent 8px 19px),linear-gradient(90deg,var(--wood-side-2),var(--wood-side))}
+.c-front{position:relative;background:linear-gradient(180deg,var(--wood-2),var(--wood-side));padding:0 10px}
+.c-lip{height:12px;margin:0 -10px 8px;background:linear-gradient(180deg,var(--wood-top),var(--wood));box-shadow:0 2px 2px rgba(0,0,0,.25)}
+.c-base{height:22px;margin:8px -10px 0;background:linear-gradient(180deg,var(--wood),var(--wood-2));box-shadow:inset 0 2px 2px rgba(0,0,0,.25),inset 0 -2px 0 var(--wood-deep)}
+.drawers{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.tdrawer{--gx:30%;position:relative;cursor:pointer;border:none;border-radius:3px;min-height:74px;padding:10px 12px 22px;
+  background:
+    repeating-radial-gradient(ellipse 160% 46% at var(--gx) 135%,transparent 0 9px,var(--grain) 9px 10px,transparent 10px 15px,var(--grain-2) 15px 16px),
+    radial-gradient(ellipse at 25% 30%,var(--wood-hi),transparent 65%),
+    linear-gradient(180deg,var(--wood),var(--wood-2));
+  box-shadow:inset 1px 1px 0 var(--wood-hi),inset -1px -2px 0 rgba(0,0,0,.18),0 0 0 2px rgba(40,18,4,.55);
+  display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .35s cubic-bezier(.2,.8,.3,1),box-shadow .35s ease}
+.tdrawer.full{grid-column:1 / -1;min-height:82px}
+.tdrawer:nth-child(2n){--gx:70%}.tdrawer:nth-child(3n){--gx:50%}
+.tdrawer:hover{transform:translate(2px,2px)}
+.tdrawer[aria-pressed="true"]{transform:translate(18px,13px);z-index:2;
+  box-shadow:inset 1px 1px 0 var(--wood-hi),inset -1px -2px 0 rgba(0,0,0,.18),-6px -5px 0 0 var(--wood-side-2),0 14px 18px -6px rgba(0,0,0,.55)}
+.engrave{font-weight:700;font-size:15px;color:var(--wood-ink);text-shadow:0 1px 0 var(--wood-hi);letter-spacing:.08em}
+.engrave small{font-family:var(--mono);font-weight:500;font-size:10.5px;margin-left:6px;letter-spacing:0}
+.pull{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);width:28%;max-width:120px;height:11px;
+  border-radius:50% 50% 0 0 / 100% 100% 0 0;background:linear-gradient(180deg,var(--wood-deep),var(--wood-2));box-shadow:inset 0 3px 3px rgba(0,0,0,.55),0 1px 0 var(--wood-hi)}
+.tdrawer.half .pull{width:40%}
+@media (max-width:480px){.chest{--D:22px;--T:16px}.engrave{font-size:13.5px}}
+
+/* bookshelf of companies */
+.shelf{max-width:860px;margin:0 auto;padding:14px 14px 0;border-radius:3px;
+  background:repeating-linear-gradient(90deg,transparent 0 11px,rgba(0,0,0,.12) 11px 12px,transparent 12px 27px),linear-gradient(180deg,var(--wood-back-2),var(--wood-back));
+  box-shadow:inset 14px 0 0 var(--wood-side),inset -14px 0 0 var(--wood-side),inset 0 14px 0 var(--wood-side),inset 0 30px 22px -14px rgba(0,0,0,.55),0 18px 24px -16px rgba(0,0,0,.5)}
+.shelf-title{display:flex;justify-content:center;padding:4px 0 12px}
+.shelf-title span{background:var(--b-gold);color:#2a1d0c;font-weight:700;font-size:13px;padding:3px 14px;border-radius:2px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.row{position:relative;display:flex;align-items:flex-end;gap:4px;padding:16px 22px 0;overflow-x:auto;overflow-y:hidden;min-height:150px}
+.board{height:16px;margin:0 0 14px;background:linear-gradient(180deg,var(--wood-top),var(--wood) 55%,var(--wood-2));box-shadow:0 6px 8px -3px rgba(0,0,0,.55)}
+.shelf .board:last-child{margin-bottom:0;height:20px}
+.book{flex:none;writing-mode:vertical-rl;text-orientation:mixed;cursor:pointer;border:none;border-radius:3px 3px 1px 1px;
+  width:46px;min-height:var(--h,170px);padding:22px 0 16px;display:flex;align-items:center;justify-content:flex-start;
+  background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(255,255,255,.12) 30%,rgba(0,0,0,.05) 60%,rgba(0,0,0,.4)),var(--c);
+  color:var(--b-ink);font-weight:700;font-size:13.5px;letter-spacing:.06em;position:relative;
+  box-shadow:inset 0 10px 0 -7px var(--b-gold),inset 0 -12px 0 -8px var(--b-gold);
+  transition:transform .3s cubic-bezier(.2,.8,.3,1);animation:slide .45s cubic-bezier(.2,.8,.3,1) backwards}
+.book.wide{width:54px}
+.book:hover{transform:translateY(-5px)}
+.book[aria-pressed="true"]{transform:translateY(-22px);box-shadow:inset 0 10px 0 -7px var(--b-gold),inset 0 -12px 0 -8px var(--b-gold),0 0 0 2px var(--b-gold),0 10px 16px -6px rgba(0,0,0,.7)}
+@keyframes slide{from{transform:translateY(-14px)}to{transform:none}}
+.shelf-note{max-width:860px;margin:10px auto 0}
+
+/* role cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.icard{text-align:left;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:2px;padding:0 16px 14px;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 25px,var(--rule) 25px 26px);background-position:0 38px;
+  box-shadow:0 2px 0 var(--line);transition:transform .2s ease;min-width:0;position:relative}
+.icard::before{content:"";display:block;height:2px;background:var(--red);margin:0 -16px;position:relative;top:36px}
+.icard:hover{transform:translateY(-3px)}
+.icard[aria-pressed="true"]{transform:translateY(-8px);box-shadow:0 0 0 2px var(--accent),0 8px 16px -8px rgba(0,0,0,.4)}
+.icard .top{display:flex;justify-content:space-between;align-items:center;height:38px}
+.icard .top b{font-size:16px}
+.icard .top em{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.icard p{margin:6px 0 8px;font-size:13.5px;line-height:26px}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11.5px;padding:1px 8px;border-radius:2px;background:var(--accent-soft)}
+.pick{position:absolute;right:10px;bottom:10px;font-family:var(--mono);font-size:10px;color:var(--accent)}
+
+/* result */
+.summary{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px 40px;border-top:3px solid var(--ink);padding-top:18px}
+@media (max-width:720px){.summary{grid-template-columns:1fr}}
+.summary h2{font-family:var(--display);font-weight:400;font-size:clamp(22px,3.4vw,30px);line-height:1.25}
+.summary h2 small{display:block;font-family:var(--body);font-size:14px;color:var(--muted);font-weight:500;margin-bottom:4px}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px;margin:0}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0}
+.routes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:22px}
+@media (max-width:900px){.routes{grid-template-columns:1fr}}
+.route{border:1px solid var(--line);background:var(--card);border-radius:4px;padding:18px 18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.route.rec{border:2px solid var(--accent)}
+.route-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.route-head h3{font-size:17px}
+.route-head .label{display:block;margin-bottom:2px}
+.badge{flex:none;font-size:11.5px;font-weight:700;background:var(--accent);color:var(--bg);padding:2px 9px;border-radius:999px}
+.route .who{font-size:13px;color:var(--muted);margin:0}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.steps li{position:relative;padding:0 0 16px 22px;border-left:2px solid var(--line);margin-left:5px}
+.steps li:last-child{border-left-color:transparent;padding-bottom:0}
+.steps li::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--card);border:2px solid var(--accent)}
+.steps li.goal::before{background:var(--accent)}
+.when{font-family:var(--mono);font-size:11.5px;color:var(--brass);display:block}
+.steps b{display:block;font-size:14.5px}
+.steps p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+
+/* matryoshka stage */
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin-bottom:18px;font-size:13.5px}
+.crumb{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:3px 12px;cursor:pointer}
+.crumb[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:var(--ink);cursor:default}
+.crumbs .sep{color:var(--muted)}
+.depth{display:flex;align-items:center;gap:8px;justify-content:center;margin:0 0 14px;color:var(--muted);font-size:13px}
+.depth i{display:inline-block;border:2px solid var(--wood-2);border-radius:2px}
+.depth i.on{background:var(--wood)}
+.view{transform-origin:50% 40%}
+.view.leave{animation:dive .45s cubic-bezier(.5,0,.8,.4) forwards}
+.view.enter{animation:emerge .55s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes dive{to{transform:scale(1.9) translateY(8%);opacity:0}}
+@keyframes emerge{from{transform:scale(.3) translateY(18%);opacity:.2}to{transform:none;opacity:1}}
+.chest.lv1{max-width:500px;filter:drop-shadow(0 22px 18px rgba(0,0,0,.28)) saturate(.92) brightness(.86)}
+.chest.lv2{max-width:440px;filter:drop-shadow(0 22px 18px rgba(0,0,0,.28)) saturate(.85) brightness(.74) hue-rotate(-6deg)}
+.engrave{white-space:normal;text-align:center;line-height:1.35}
+.sub{font-size:11.5px;color:var(--wood-ink);opacity:.8}
+.back{margin-top:20px;display:flex;justify-content:center}
+.back button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 16px;cursor:pointer;font-size:13.5px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="label">Internship Roadmap Cabinet</div>
+      <h1>就活キャビネット</h1>
+      <p id="lede"></p>
+    </div>
+    <div class="profile" id="profile">
+      <div class="seg" role="group" aria-label="学年"><span class="label">学年</span>
+        <button class="chip" id="g-early" data-grade="early">学部1・2年</button>
+        <button class="chip" id="g-mid" data-grade="mid">学部3年 / 修士1年</button>
+      </div>
+      <div class="seg" role="group" aria-label="重視すること"><span class="label">重視</span>
+        <button class="chip" id="f-a" data-focus="A">内定への近さ</button>
+        <button class="chip" id="f-b" data-focus="B">実務スキル</button>
+        <button class="chip" id="f-c" data-focus="C">視野を広げたい</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-dom" data-mode="dom">国内の就活<small>業界のタンス</small></button>
+    <button class="tab" role="tab" id="tab-abr" data-mode="abr">留学生<small>キャリアフォーラムのタンス</small></button>
+  </div>
+
+  <div id="mode-dom" class="wrap">
+    <section id="d-stage"></section>
+  </div>
+
+  <div id="mode-abr" class="wrap" hidden>
+    <section>
+      <div class="step-head"><span class="n">STEP 1</span><h2>今住んでいる地域とフォーラム</h2></div>
+      <div class="seg" id="regions" role="group" aria-label="地域"></div>
+      <div class="forums" id="forums"></div>
+    </section>
+    <section id="a-stage"></section>
+  </div>
+</div>
+
+<script>
+/* ===== 国内：業界ごとの会社と役職 ===== */
+const COMPANIES = [
+ {id:"shosha", name:"総合商社", size:"half", firms:["三菱商事","三井物産","伊藤忠商事","住友商事","丸紅","豊田通商","双日"], roles:[
+  {name:"営業（トレーディング）", en:"Trading", line:"資源・食料・機械などを国をまたいで売り買いし、取引をまとめる。", skills:["交渉力","数字の感覚","英語"],
+   prep:"商社の事業ポートフォリオを比較し、1つの事業を深掘りしておく", short:"数日間のグループワーク型。新規事業立案やケースが中心", long:"貿易実務や海外営業を扱う中小商社・メーカーの長期インターン",
+   output:"担当した取引・資料作成の件数と、自分が動いて変わった数字", selection:"インターン参加者向けの早期面談がある会社が多い。面接は人物重視", alt:"学生向けビジネスコンテストや海外ボランティアで「現場を動かした経験」を作る"},
+  {name:"事業投資", en:"Investment", line:"企業や事業に出資し、経営に入って価値を上げる。", skills:["財務分析","論理思考","当事者意識"],
+   prep:"簿記3級〜2級レベルの財務の基礎とPL/BSの読み方", short:"投資判断をグループで行うケース型", long:"VC・PEファンドやスタートアップの経営企画の長期インターン",
+   output:"作った事業計画・財務モデルと、その判断が使われた場面", selection:"ケース面接や財務の基礎知識を問われることがある", alt:"投資サークルや企業分析コンテストで分析の実績を作る"},
+  {name:"コーポレート（経理・法務）", en:"Corporate", line:"財務・法務・人事で会社全体を支える。", skills:["正確さ","専門知識","調整力"],
+   prep:"簿記2級や法学の基礎など専門性の入口を固める", short:"事業部門と合同のプログラムが多い", long:"会計事務所・法務系スタートアップの長期インターン",
+   output:"取った資格と、実務で処理した業務の範囲", selection:"総合職一括採用が多く、配属は入社後。専門性は加点要素", alt:"資格取得を軸に、監査法人や事務所の短期インターンで比較する"}]},
+ {id:"consul", name:"外資系コンサル", size:"half", firms:["マッキンゼー・アンド・カンパニー","ボストン コンサルティング グループ","ベイン・アンド・カンパニー","A.T. カーニー","アクセンチュア","デロイト トーマツ","PwC Japan グループ","EY Japan","KPMGジャパン"], roles:[
+  {name:"戦略コンサルタント", en:"Strategy", line:"経営者の課題に対し、全社戦略や新規事業を提案する。", skills:["仮説思考","ケース","資料作成"],
+   prep:"ケース面接の型（フェルミ推定・売上向上）を30問以上練習", short:"3〜5日のジョブ。実際の課題を解き社員からフィードバック", long:"スタートアップや事業会社の経営企画・リサーチの長期インターン",
+   output:"自分で立てた仮説と、それを検証した分析の流れ", selection:"ジョブ通過が実質の選考。早期に内定が出ることが多い", alt:"戦略系ビジネスコンテストで入賞し、論理と提案の実績を示す"},
+  {name:"ITコンサルタント", en:"Technology", line:"システム導入やDXの計画から実行までを支援する。", skills:["IT理解","業務分析","調整力"],
+   prep:"基本情報技術者レベルの知識と、DX事例の整理", short:"DX提案型のグループワーク", long:"SaaS企業のカスタマーサクセスやPMアシスタントの長期インターン",
+   output:"関わったプロジェクトの規模と、自分の役割", selection:"総合ファームはWebテストとケース・人物面接の組み合わせ", alt:"ハッカソン参加や簡単なアプリ制作でITへの理解を示す"},
+  {name:"人事・組織コンサル", en:"People", line:"人事制度や組織づくりを設計し、変革を支える。", skills:["傾聴","制度設計","論理思考"],
+   prep:"人的資本経営や人事制度の基本を調べておく", short:"組織課題のケースワーク", long:"HRテック企業や人材会社の長期インターン",
+   output:"改善した仕組み（採用・研修など）とその結果", selection:"ケースに加え、人への関心の深さを見られる", alt:"サークルや学生団体の組織改革を主導した経験を言語化する"}]},
+ {id:"it", name:"IT・メガベンチャー", size:"full", firms:["リクルート","楽天グループ","LINEヤフー","サイバーエージェント","メルカリ","ディー・エヌ・エー","MIXI","ソフトバンク"], roles:[
+  {name:"ソフトウェアエンジニア", en:"Engineer", line:"プロダクトの機能を設計・実装し、改善し続ける。", skills:["プログラミング","設計","チーム開発"],
+   prep:"GitHubで公開できる個人開発を1つ完成させる", short:"数日〜数週間の就業型。実際のチームで開発", long:"有給の長期エンジニアインターン（週3日〜）",
+   output:"マージされたPRや作ったサービス、ポートフォリオ", selection:"コーディング試験と技術面接。インターン評価で直接オファーもある", alt:"ハッカソンや競技プログラミングで技術力を見える化する"},
+  {name:"プロダクトマネージャー", en:"PdM", line:"ユーザー課題から「何を作るか」を決め、開発を率いる。", skills:["ユーザー理解","データ分析","意思決定"],
+   prep:"好きなアプリの改善案を、根拠つきで3本書いてみる", short:"新機能企画のグループワーク", long:"スタートアップでのPdMアシスタントやグロースの長期インターン",
+   output:"企画した施策と、KPIの変化", selection:"新卒PdM枠は少数。ビジネス職入社から目指すルートも多い", alt:"自分で小さなサービスを出し、ユーザーの声を集める"},
+  {name:"ビジネス職（企画・営業）", en:"Biz", line:"事業の売上をつくり、市場を広げる。", skills:["行動量","数字管理","提案力"],
+   prep:"SaaSのビジネスモデル（MRR・解約率など）を理解する", short:"営業・事業立案の実践型", long:"インサイドセールスやマーケの有給長期インターン",
+   output:"商談数・成約数など、追いかけた数字", selection:"選考が早く、通年採用の会社も多い", alt:"学生起業や物販で、小さくても売上をつくった経験を作る"}]},
+ {id:"maker", name:"大手メーカー", size:"full", firms:["トヨタ自動車","ソニーグループ","日立製作所","パナソニック","キーエンス","味の素","サントリー","資生堂","任天堂"], roles:[
+  {name:"研究開発", en:"R&D", line:"新しい技術や素材を研究し、製品の種をつくる。", skills:["専門研究","実験計画","粘り強さ"],
+   prep:"自分の研究内容を専門外の人に3分で説明できるようにする", short:"研究所での実習型。1〜2週間のものもある", long:"大学の研究室での研究そのものが主軸。企業との共同研究も強み",
+   output:"研究の成果と、学会発表や論文", selection:"学校推薦やジョブマッチング面談がある", alt:"学会発表やポスター発表で研究を外に出す"},
+  {name:"生産技術・品質", en:"Engineering", line:"工場で「安く・早く・確実に」作る仕組みをつくる。", skills:["改善思考","現場理解","機械・電気の知識"],
+   prep:"工場見学やカイゼンの事例を調べる", short:"工場実習型のインターン", long:"町工場やものづくりスタートアップの長期インターン",
+   output:"改善した工程と、短縮できた時間やコスト", selection:"理系は推薦・自由応募の両方がある", alt:"ロボコンや鳥人間などのものづくり大会で現場経験を積む"},
+  {name:"商品企画・マーケ", en:"Marketing", line:"市場を読み、売れる商品を企画して届ける。", skills:["市場分析","企画力","発信力"],
+   prep:"気になる商品のヒット理由を分析し、ノートにまとめる", short:"新商品企画のグループワーク", long:"D2Cブランドやマーケ支援会社の長期インターン",
+   output:"企画した施策とSNSやECの反応数", selection:"文系総合職として採用し、配属は入社後のことが多い", alt:"マーケティングコンテストやSNS運用で発信の実績を作る"}]},
+ {id:"bank", name:"メガバンク・金融", size:"full", firms:["三菱UFJ銀行","三井住友銀行","みずほフィナンシャルグループ","野村證券","大和証券グループ","東京海上日動火災保険","日本生命保険"], roles:[
+  {name:"法人営業", en:"Corporate Banking", line:"企業に融資や資金調達の提案をし、成長を支える。", skills:["信頼構築","財務分析","提案力"],
+   prep:"簿記と企業の決算書の読み方", short:"融資判断を体験するワーク型", long:"地方銀行・信金の業務体験や、営業系の長期インターン",
+   output:"担当した顧客数と、提案が通った件数", selection:"インターン参加者向けの面談が多い。人物重視", alt:"金融系の学生団体や経済コンテストで分析力を示す"},
+  {name:"市場・運用", en:"Markets", line:"為替・株式・債券を扱い、資金を運用する。", skills:["数学","マーケット感覚","判断の速さ"],
+   prep:"日経・為替を毎日追い、自分の見立てを記録する", short:"トレーディングゲーム型のワーク", long:"資産運用会社やフィンテックの長期インターン",
+   output:"分析したレポートと、その見立ての検証", selection:"コース別採用が多く、数理的な力を問われる", alt:"株式投資コンテストや統計検定で実力を形にする"},
+  {name:"デジタル・データ", en:"Digital", line:"金融サービスのアプリ・データ活用を進める。", skills:["データ分析","IT理解","企画力"],
+   prep:"PythonかSQLで簡単なデータ分析をやってみる", short:"DX企画型のワーク", long:"フィンテック企業のデータ分析長期インターン",
+   output:"作った分析と、それで決まったこと", selection:"デジタル専門コースを設ける会社が増えている", alt:"データ分析コンペ（Kaggleなど）に出る"}]},
+ {id:"ad", name:"広告・マーケ", size:"full", firms:["電通","博報堂","ADKホールディングス","サイバーエージェント","ベクトル","セプテーニ"], roles:[
+  {name:"プランナー", en:"Planner", line:"広告やキャンペーンの戦略・企画を立てる。", skills:["企画力","情報収集","言語化"],
+   prep:"話題になった広告を毎週1本分析する", short:"企画コンペ型。最終日にプレゼン", long:"広告・PR会社や事業会社マーケの長期インターン",
+   output:"通った企画とその反応", selection:"インターンの企画評価が選考に直結しやすい", alt:"広告賞の学生部門やコピーコンテストに応募する"},
+  {name:"営業（アカウント）", en:"Account", line:"クライアントの窓口として社内外をまとめる。", skills:["調整力","関係構築","スピード"],
+   prep:"広告ビジネスの仕組みとメディアの種類を理解する", short:"クライアント課題を解く提案型", long:"Web広告代理店の運用・営業の長期インターン",
+   output:"担当したクライアントとプロジェクトの規模", selection:"人物面接が中心。体力と巻き込み力を見られる", alt:"学園祭や学生イベントのスポンサー集めを主導する"},
+  {name:"クリエイティブ", en:"Creative", line:"コピーやビジュアル、映像で伝わる表現をつくる。", skills:["表現力","発想力","作り切る力"],
+   prep:"自作のコピーやデザインをポートフォリオにまとめる", short:"課題制作型。作品で評価される", long:"制作会社やデザインスタジオの長期インターン",
+   output:"作品集（ポートフォリオ）", selection:"クリエイティブ試験や作品提出がある", alt:"学生向けコピー・デザインコンテストで受賞を狙う"}]}
+];
+const TIMING = {
+  early:{ A:["今〜3月","3年 6〜9月","3年 10〜2月","3年 3月〜"], B:["今から","1〜2年後","3年 夏〜冬","3年 3月〜"], C:["今〜来年","2年 春〜夏","3年 夏","3年 秋〜"] },
+  mid:{ A:["11〜12月","12〜2月","2〜3月","3〜6月"], B:["今すぐ","1〜3か月後","12〜2月","3〜6月"], C:["11〜1月","12〜2月","1〜3月","3〜6月"] }
+};
+const ROUTES = {
+  A:{tag:"Route A", title:"選考直結ルート", who:"短期インターンで評価をもらい、早期選考に乗る王道。", steps:(r,f,ind)=>[
+    ["準備",r.prep],
+    [f+"の短期インターンに参加",r.short],
+    ["早期選考・面談","評価の高い参加者は早期の面談に呼ばれやすい。参加後に社員へお礼と質問を送ると印象が残る"],
+    [f+"の"+r.name+"として内定へ",r.selection]]},
+  B:{tag:"Route B", title:"実務先行ルート", who:"長期インターンで実績を作り、それを武器に選考へ。", steps:(r,f,ind)=>[
+    ["長期インターンを始める",r.long],
+    ["成果を数字と言葉にする","まとめるもの："+r.output],
+    ["実績を持って短期インターンへ","実務経験はESと面接で具体例として強い。"+f+"の短期インターンに応募"],
+    ["本選考で実績を語る",r.selection]]},
+  C:{tag:"Route C", title:"寄り道ルート", who:"コンペや別業界も見てから、納得して決める。", steps:(r,f,ind)=>[
+    ["外で実績を作る",r.alt],
+    ["OB・OG訪問で現場を聞く",f+"の"+r.name+"で働く人に会い、1日の仕事と求められる力（"+r.skills.join("・")+"）を聞く"],
+    ["近い業界のインターンで比較",ind+"以外の近い業界の短期インターンにも1〜2社出て、違いを自分の言葉で説明できるようにする"],
+    ["志望理由を固めて本選考","比較した上での志望理由は面接で説得力が出る。"+r.selection]]}
+};
+
+/* ===== 留学生：キャリアフォーラム ===== */
+const FORUMS = {
+  bos:{id:"bos", name:"ボストンキャリアフォーラム", short:"ボスキャリ", start:"2026-11-20", end:"2026-11-22", venue:"Hynes Convention Center（ボストン）", list:"2026", site:"CareerForum.Net", when:"例年11月"},
+  tkw:{id:"tkw", name:"東京ウインターキャリアフォーラム", short:"東京ウインター", start:null, end:null, venue:"東京ビッグサイト（2025年の会場）", list:"ref", site:"CareerForum.Net", when:"2026年12月（日程はCFNで確認）", tag:"冬休みの帰国中に参加しやすい"},
+  lon:{id:"lon", name:"ロンドンキャリアフォーラム", short:"ロンキャリ", start:"2027-02-20", end:"2027-02-21", venue:"Olympia West Hall（ロンドン）", list:"ref", site:"CareerForum.Net", when:"例年2月"},
+  los:{id:"los", name:"ロサンゼルスキャリアフォーラム", short:"ロスキャリ", start:"2027-05-15", end:"2027-05-16", venue:"LA Convention Center Kentia Hall", list:"ref", site:"CareerForum.Net", when:"例年春"},
+  tks:{id:"tks", name:"東京サマーキャリアフォーラム", short:"東京サマー", start:null, end:null, venue:"東京ビッグサイト", list:"ref", site:"CareerForum.Net", when:"例年6月（2026年は6/20〜21）", tag:"夏休みの帰国中に参加しやすい"},
+  osk:{id:"osk", name:"大阪キャリアフォーラム", short:"大阪", start:null, end:null, venue:"ハービスHALL（大阪・梅田）", list:"ref", site:"CareerForum.Net", when:"例年7月（2026年は7/4）", tag:"関西の企業にも会える"},
+  kinki:{id:"kinki", kind:"intl", name:"近畿ブロック外国人留学生就職面接会2026秋", short:"近畿面接会", start:"2026-11-17", end:"2026-11-17", venue:"OMM 2階展示ホール（大阪・天満橋）", list:"ref", site:"大阪労働局・ハローワーク", when:"例年秋", tag:"面接会形式。複数社に応募できる"},
+  jetro:{id:"jetro", kind:"intl", name:"ジェトロ オンライン合同企業説明会", short:"ジェトロ合説", start:null, end:null, venue:"オンライン（日本語）", list:"ref", site:"ジェトロ", when:"例年 秋と冬（2026秋は10/13〜16、2026冬は1/26〜）", tag:"海外の大学からも参加できる。外国人留学生向けで国内最大級"},
+  cfair:{id:"cfair", kind:"intl", name:"外国人留学生のためのキャリアフェア", short:"留学生キャリアフェア", start:null, end:null, venue:"東京・渋谷／大阪・梅田", list:"ref", site:"学生情報センター・GTNなど", when:"例年 春と秋（2026春は東京4/24・大阪5/19）", tag:"履歴書不要・服装自由"},
+  asean:{id:"asean", kind:"intl", name:"ASEAN Career Fair with Japan", short:"ASEANキャリアフェア", start:null, end:null, venue:"Singapore Expo（シンガポール）", list:"ref", site:"NUS CFG", when:"例年2月（2026年は2/7）", tag:"東南アジアの学生と日本企業をつなぐ。招待制で事前選考あり"},
+  tkf:{id:"tkf", name:"Global Talent Expo 2027（TKF）", short:"GTE2027", start:"2027-08-07", end:"2027-08-08", venue:"東京（会場は未定）", list:"ref", site:"TKFの公式サイト", when:"例年8月", tag:"CFNとは別の主催。渡航費の奨学金あり"}
+};
+const REGIONS = [
+  {id:"us-e", name:"アメリカ東部", forums:["bos","tkw","los"]},
+  {id:"us-w", name:"アメリカ西部", forums:["los","bos","tkw"]},
+  {id:"ca", name:"カナダ", forums:["bos","los","tkw"]},
+  {id:"uk", name:"イギリス", forums:["lon","bos","tkw"]},
+  {id:"eu", name:"ヨーロッパ", forums:["lon","bos","tkw"]},
+  {id:"ap", name:"東アジア・オセアニア", forums:["tkw","tks","bos"]},
+  {id:"sea", name:"東南アジア", forums:["asean","tkw","jetro"]},
+  {id:"jp", name:"日本（一時帰国・帰国後）", forums:["tkw","tks","osk","tkf"]},
+  {id:"intl", name:"日本で学ぶ外国人留学生", forums:["kinki","jetro","cfair"]}
+];
+const AROLES = {
+  shosha:[
+    {name:"総合職（営業・事業）",en:"Business",line:"トレーディングや事業投資の現場で、海外とのビジネスを動かす。",skills:["語学","交渉力","タフさ"],tip:"面接では「海外で人を動かした経験」を具体的に。英語面接に切り替わる会社もある"},
+    {name:"コーポレート",en:"Corporate",line:"財務・法務・人事などで全社を支える。",skills:["専門性","正確さ","調整力"],tip:"会計や法律の授業・資格など、専門の入口を示せると強い"}],
+  consul:[
+    {name:"戦略コンサルタント",en:"Strategy",line:"経営課題に戦略を提案する。",skills:["ケース","仮説思考","英語"],tip:"ケース面接が会期中に行われることが多い。フェルミ推定と売上向上ケースを英日両方で練習"},
+    {name:"IT・デジタルコンサル",en:"Technology",line:"DXやシステム導入を計画から実行まで支える。",skills:["IT理解","業務分析","調整力"],tip:"留学先で学んだテック事例やプロジェクト経験を話せるようにする"},
+    {name:"会計・リスクアドバイザリー",en:"Advisory",line:"監査・税務・リスク管理で企業を支える。",skills:["会計知識","正確さ","論理思考"],tip:"USCPA学習中などは大きな加点。勉強の進み具合を具体的に"}],
+  fin:[
+    {name:"投資銀行部門（IBD）",en:"IBD",line:"M&Aや資金調達のアドバイスをする。",skills:["財務モデル","体力","英語"],tip:"テクニカル質問（DCF・バリュエーション）が出る。英語で説明できるように"},
+    {name:"マーケッツ",en:"Markets",line:"株式・債券・為替のセールスやトレーディング。",skills:["数字","マーケット感覚","判断の速さ"],tip:"最近の相場を1つ選び、自分の見立てを英日で話せるように"},
+    {name:"総合職（法人営業）",en:"Banking",line:"企業に融資や提案をし、成長を支える。",skills:["信頼構築","財務分析","提案力"],tip:"日系銀行は人物重視。なぜ海外でなく日本の銀行かを答えられるように"}],
+  it:[
+    {name:"ソフトウェアエンジニア",en:"Engineer",line:"サービスを設計・開発する。",skills:["プログラミング","設計","英語での開発"],tip:"コーディング試験がある会社も。GitHubやプロジェクトをレジュメに載せる"},
+    {name:"ソリューション・技術営業",en:"Solutions",line:"技術を理解し、顧客に最適な仕組みを提案する。",skills:["IT理解","提案力","英語"],tip:"クラウドやAIの基礎用語を英日で説明できるように"},
+    {name:"ビジネス職（企画・営業）",en:"Biz",line:"事業の売上を伸ばし、海外展開を担う。",skills:["行動量","数字管理","語学"],tip:"留学中に何かを「売った・広めた」経験があれば数字で話す"}],
+  maker:[
+    {name:"技術職（研究・開発）",en:"R&D",line:"製品や技術を研究・開発する。",skills:["専門研究","実験","説明力"],tip:"研究内容を専門外の面接官に3分で説明できるように"},
+    {name:"事務系総合職（海外営業）",en:"Global Sales",line:"海外の販売拠点や取引先と事業を広げる。",skills:["語学","異文化理解","提案力"],tip:"海外駐在や現地法人への関心を、留学経験とつなげて話す"},
+    {name:"マーケティング",en:"Marketing",line:"ブランドや商品の戦略を立てて届ける。",skills:["市場分析","企画力","発信力"],tip:"留学先の市場で気づいた商品の違いを具体例にする"}],
+  ent:[
+    {name:"企画・プロデュース",en:"Producer",line:"ゲームや作品の企画を立て、チームを動かす。",skills:["企画力","作品理解","調整力"],tip:"好きな作品を分析した企画書やポートフォリオがあると強い"},
+    {name:"海外事業・ライセンス",en:"Global",line:"作品やIPを海外に届ける。",skills:["語学","交渉力","文化理解"],tip:"現地でどう受け入れられているかを、留学先の実体験で語る"},
+    {name:"エンジニア・クリエイター",en:"Creator",line:"ゲーム開発、映像、デザインなどで作品をつくる。",skills:["技術","表現力","作り切る力"],tip:"作品提出や実技試験がある。ポートフォリオを当日持参"}],
+  infra:[
+    {name:"総合職（開発・事業）",en:"Development",line:"街づくりや物流・航空のネットワークを企画する。",skills:["企画力","長期視点","調整力"],tip:"海外の街や交通で気づいたことを、志望動機につなげる"},
+    {name:"技術系総合職",en:"Engineering",line:"建築・設計・施工管理などを担う。",skills:["専門知識","現場力","安全意識"],tip:"専攻と仕事のつながりを具体的に説明する"}],
+  gov:[
+    {name:"総合職（行政）",en:"Policy",line:"国の政策を企画し、制度をつくる。",skills:["公共心","論理思考","語学"],tip:"国家公務員試験の日程と受験資格を、ブースで必ず確認する"},
+    {name:"外交・国際分野",en:"Diplomacy",line:"外交や国際交渉、海外拠点での仕事。",skills:["語学","交渉力","国際情勢"],tip:"留学先の国と日本の関係について、自分の意見を持っておく"}]
+};
+const INDUSTRIES = [
+  {id:"gov", name:"官公庁", size:"half", firms:["外務省","経済産業省","農林水産省","防衛省"]},
+  {id:"infra", name:"不動産・運輸", size:"half", firms:["三井不動産","三菱地所","野村不動産","清水建設グループ","全日本空輸（ANA）","OCEAN NETWORK EXPRESS"]},
+  {id:"shosha", name:"商社", size:"full", firms:["三菱商事","三井物産","伊藤忠商事","住友商事","丸紅","長瀬産業","稲畑産業グループ","マクニカ"]},
+  {id:"consul", name:"コンサル", size:"full", firms:["マッキンゼー・アンド・カンパニー","ボストン コンサルティング グループ","ベイン・アンド・カンパニー","A.T. カーニー","ローランド・ベルガー","アクセンチュア","デロイト トーマツ","PwC Japan グループ","EY Japan","KPMGジャパン","ベイカレント"]},
+  {id:"fin", name:"金融", size:"full", firms:["三菱UFJ銀行","三井住友銀行","みずほフィナンシャルグループ","野村證券","大和証券グループ","SMBC日興証券","J.P.モルガン","バンク・オブ・アメリカ","シティグループ証券","オリックス","国際協力銀行（JBIC）"]},
+  {id:"it", name:"IT・通信", size:"full", firms:["アマゾン ウェブ サービス ジャパン","リクルートホールディングス","楽天グループ","ソフトバンク","MIXI","伊藤忠テクノソリューションズ","富士通グループ"]},
+  {id:"maker", name:"メーカー", size:"full", firms:["Apple","日立製作所","ソニーセミコンダクタソリューションズ","富士フイルム","Rapidus","日本ロレアル","ヤマハ","大塚製薬","積水化学グループ"]},
+  {id:"ent", name:"エンタメ・メディア", size:"full", firms:["任天堂グループ","ソニー・インタラクティブエンタテインメント","ソニーミュージックグループ","セガ","コナミグループ","KADOKAWA","講談社","日本経済新聞社","TBSテレビ"]}
+];
+
+/* ===== state ===== */
+const ds = {grade:"mid", focus:"A", ind:"consul", firm:0, role:0};
+const as = {region:"us-e", forum:"bos", ind:"shosha", firm:0, role:0};
+let mode = "dom";
+function load(k,o){ try{const s=JSON.parse(localStorage.getItem(k)||"null"); if(s) Object.assign(o,s);}catch(e){} }
+function save(){ try{ localStorage.setItem("sk-dom",JSON.stringify(ds)); localStorage.setItem("sk-abr",JSON.stringify(as)); localStorage.setItem("sk-mode",mode);}catch(e){} }
+load("sk-dom",ds); load("sk-abr",as); try{ mode=localStorage.getItem("sk-mode")||"dom"; }catch(e){}
+if(!COMPANIES.some(c=>c.id===ds.ind)) Object.assign(ds,{ind:"consul",firm:0,role:0});
+if(!REGIONS.some(r=>r.id===as.region)) as.region="us-e";
+if(!INDUSTRIES.some(i=>i.id===as.ind)) Object.assign(as,{ind:"shosha",firm:0,role:0});
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const hash = s=>[...s].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,7);
+
+/* ===== shared pieces ===== */
+const LEVELS=["業界","会社","役職","ロードマップ"];
+function chestHTML(scope, lv, items, sel){
+  return `<div class="stage"><div class="chest lv${lv}">
+    <div class="c-top" aria-hidden="true"></div><div class="c-side" aria-hidden="true"></div>
+    <div class="c-front"><div class="c-lip" aria-hidden="true"></div>
+      <div class="drawers">${items.map(x=>`
+        <button class="tdrawer ${x.size}" id="${scope}-l${lv}-${x.key}" data-scope="${scope}" data-pick="${x.val}" aria-pressed="${x.val===sel}">
+          <span class="engrave">${esc(x.label)}${x.count?`<small>${x.count}</small>`:""}</span>${x.sub?`<span class="sub">${esc(x.sub)}</span>`:""}<span class="pull" aria-hidden="true"></span>
+        </button>`).join("")}</div>
+      <div class="c-base" aria-hidden="true"></div></div></div></div>`;
+}
+function depthHTML(lv){
+  return `<div class="depth" aria-hidden="true">${[0,1,2].map(i=>`<i class="${i<=lv?"on":""}" style="width:${22-i*5}px;height:${22-i*5}px"></i>`).join("")}<span>${lv+1}つ目のタンス</span></div>`;
+}
+function crumbsHTML(scope, lv, names){
+  return `<nav class="crumbs" aria-label="今いる場所">${names.slice(0,lv+1).map((n,i)=>
+    `${i?'<span class="sep">›</span>':""}<button class="crumb" id="${scope}-cr-${i}" data-scope="${scope}" data-lv="${i}" ${i===lv?'aria-current="page"':""}>${esc(n)}</button>`).join("")}</nav>`;
+}
+function firmItems(firms){
+  return firms.map((n,i)=>({key:i,val:String(i),label:n,size:(firms.length%2===1&&i===firms.length-1)?"full":"half"}));
+}
+function routesHTML(routes, rec, recNote){
+  return `<div class="routes">${routes.map(R=>`<article class="route${R.k===rec?" rec":""}">
+    <div class="route-head"><div><span class="label">${R.tag}</span><h3>${R.title}</h3></div>${R.k===rec?'<span class="badge">おすすめ</span>':""}</div>
+    <p class="who">${esc(R.who)}${R.k===rec&&recNote?" "+recNote:""}</p>
+    <ol class="steps">${R.steps.map((s,i)=>`<li class="${i===R.steps.length-1?"goal":""}"><span class="when">${esc(s[0])}</span><b>${esc(s[1])}</b><p>${esc(s[2])}</p></li>`).join("")}</ol>
+  </article>`).join("")}</div>`;
+}
+function backHTML(scope, lv){ return lv>0?`<div class="back"><button id="${scope}-back" data-scope="${scope}" data-lv="${lv-1}">← 1つ前のタンスに戻る</button></div>`:""; }
+
+/* ===== 国内 ===== */
+ds.lv = ds.lv ?? 0;
+function dInd(){ return COMPANIES.find(c=>c.id===ds.ind); }
+function dResult(){
+  const c=dInd(), f=c.firms[ds.firm], r=c.roles[ds.role], t=TIMING[ds.grade];
+  const routes=["A","B","C"].map(k=>({k,...ROUTES[k],steps:ROUTES[k].steps(r,f,c.name).map((s,i)=>[t[k][i],s[0],s[1]])}));
+  return `<div class="summary">
+      <h2><small>${esc(c.name)} › ${esc(f)} ›</small>${esc(r.name)}</h2>
+      <dl class="facts">
+        <dt>学年</dt><dd>${ds.grade==="early"?"学部1・2年":"学部3年 / 修士1年"}</dd>
+        <dt>見られる力</dt><dd>${r.skills.map(esc).join("・")}</dd>
+        <dt>まずやること</dt><dd>${esc(r.prep)}</dd>
+      </dl>
+    </div>
+    ${routesHTML(routes, ds.focus)}
+    <p class="note" style="margin-top:18px">時期は日本の新卒採用の一般的な目安です。企業名は大手の例で、インターンの有無や時期、募集職種は年ごとに変わります。応募前に各社の採用ページで確認してください。</p>`;
+}
+function dStage(){
+  const c=dInd(); if(ds.firm>=c.firms.length) ds.firm=0; if(ds.role>=c.roles.length) ds.role=0;
+  const names=["業界のタンス",c.name,c.firms[ds.firm],c.roles[ds.role].name];
+  const heads=["業界のタンスを開ける",`${c.name}のタンス：会社を選ぶ`,`${c.firms[ds.firm]}のタンス：役職を選ぶ`,"インターンのロードマップ"];
+  let body;
+  if(ds.lv===0) body=chestHTML("d",0,COMPANIES.map(x=>({key:x.id,val:x.id,label:x.name,count:`${x.firms.length}社`,size:x.size})),ds.ind);
+  else if(ds.lv===1) body=chestHTML("d",1,firmItems(c.firms),String(ds.firm));
+  else if(ds.lv===2) body=chestHTML("d",2,c.roles.map((r,i)=>({key:i,val:String(i),label:r.name,sub:r.line,size:"full"})),String(ds.role));
+  else body=dResult();
+  return {crumbs:crumbsHTML("d",ds.lv,names), head:`<div class="step-head"><span class="n">STEP ${ds.lv+1}</span><h2>${esc(heads[ds.lv])}</h2>${ds.lv<3?'<span class="hint">引き出しを開ける</span>':""}</div>`, body, lv:ds.lv};
+}
+function renderChips(){
+  document.querySelectorAll("[data-grade]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.grade===ds.grade));
+  document.querySelectorAll("[data-focus]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.focus===ds.focus));
+}
+
+/* ===== 留学生 ===== */
+as.lv = as.lv ?? 0;
+const DOW="日月火水木金土";
+const today=()=>{const d=new Date(); d.setHours(0,0,0,0); return d;};
+const toD=s=>{const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d);};
+const addD=(d,n)=>{const x=new Date(d); x.setDate(x.getDate()+n); return x;};
+const fmt=d=>`${d.getMonth()+1}/${d.getDate()}(${DOW[d.getDay()]})`;
+const daysTo=f=>!f.start?999:Math.round((toD(f.start)-today())/86400000);
+function countLabel(f){ if(!f.start) return {t:"日程未発表",hot:false}; const n=daysTo(f), en=Math.round((toD(f.end)-today())/86400000);
+  if(en<0) return {t:"終了",hot:false}; if(n<=0) return {t:"開催中",hot:true}; return {t:`あと${n}日`,hot:n<=21}; }
+function aInd(){ return INDUSTRIES.find(i=>i.id===as.ind); }
+function renderRegions(){
+  $("#regions").innerHTML = REGIONS.map(r=>`<button class="chip" id="rg-${r.id}" data-region="${r.id}" aria-pressed="${r.id===as.region}">${esc(r.name)}</button>`).join("");
+  const reg=REGIONS.find(r=>r.id===as.region); if(!reg.forums.includes(as.forum)) as.forum=reg.forums[0];
+  $("#forums").innerHTML = reg.forums.map((id,i)=>{const f=FORUMS[id],c=countLabel(f);
+    return `<button class="ticket" id="fm-${id}" data-forum="${id}" aria-pressed="${id===as.forum}">
+      <span class="row"><b>${esc(f.short)}</b><span class="count${c.hot?" hot":""}">${c.t}</span></span>
+      <span class="meta">${esc(f.name)}${i===0?"・この地域から一番行きやすい":""}</span>
+      <span class="date">${f.start?`${toD(f.start).getFullYear()}年 ${fmt(toD(f.start))}〜${fmt(toD(f.end))}`:esc(f.when)}</span>
+      ${f.tag?`<span class="meta">${esc(f.tag)}</span>`:""}
+      <span class="meta">${esc(f.venue)}</span></button>`;}).join("");
+}
+const NEXT={kinki:"jetro",jetro:"cfair",cfair:"kinki",asean:"tkw",bos:"tkw",tkw:"lon",lon:"los",los:"tks",tks:"osk",osk:"tkf",tkf:"bos"};
+function aResult(){
+  const f=FORUMS[as.forum], ind=aInd(), firm=ind.firms[as.firm], r=AROLES[ind.id][as.role];
+  const known=!!f.start, s=known?toD(f.start):null, e=known?toD(f.end):null, n=daysTo(f), t=today(), soon=known&&n<=21;
+  const D = known?`${fmt(s)}〜${fmt(e)}`:f.when, D0 = known?fmt(s):"開催初日", DE = known?fmt(e):"会期最終日";
+  const nx=FORUMS[NEXT[f.id]], nxKnown=nx.start&&daysTo(nx)>0;
+  const nxLabel = nxKnown ? `${nx.short}（${fmt(toD(nx.start))}〜）` : `${nx.short}（${nx.when}）`;
+  const preWhen = !known ? "開催の2〜6週間前" : n>14 ? `${fmt(t)}〜${fmt(addD(s,-14))}ごろ` : (n>0?"今日〜締切まで":"次回に向けて");
+  const routes=[
+    {k:"A",tag:"Route A",title:"事前応募ルート",who:"開催前にWebで応募し、会期中の面接枠を確保する。",steps:[
+      [n>0?"今日":"次回の募集開始時",`${f.site}に登録`,`日本語の履歴書と英文レジュメの両方を用意。${firm}の企業ページをブックマークしておく`],
+      [preWhen,`${firm}に事前応募`,(known&&n>0&&n<=14?`開催まであと${n}日。事前応募を締め切った求人もあるので、今日中に${firm}の求人を確認する。`:"")+`書類が通ると会期中の面接枠が決まる。志望は「${r.name}」で出す`],
+      [D,"会場で面接",r.tip],
+      [`${DE}〜2週間後`,"最終面接・内定","会期中に面接を重ね、最終日までに内定を出す会社もある。夜の食事会や別会場での面接に呼ばれることもあるので、予定を空けておく"]]},
+    {k:"B",tag:"Route B",title:"当日ウォークインルート",who:"事前応募が間に合わなくても、当日ブースで勝負する。",steps:[
+      [known&&n>0?`今日〜${fmt(addD(s,-1))}`:"開催まで","英日で1分の自己紹介を作る",`見られる力は${r.skills.join("・")}。留学で一番大きく変わった経験を軸にする`],
+      [`${D0} 開場直後`,`${firm}のブースへ`,"当日受付をしている会社もある。人が少ない開場直後が狙い目。レジュメは多めに印刷して持っていく"],
+      [D,"その場で面接・次の面接の約束",r.tip],
+      [`${DE}〜`,"内定へ","会期後にオンラインで最終面接をする会社もある。連絡はすぐ返す"]]},
+    {k:"C",tag:"Route C",title:"次の会場で勝負ルート",who:`今回は下見にして、${nx.short}で本番を迎える。`,steps:[
+      [n>0?D:"今から",n>0?`${f.short}で下見・情報収集`:"オンライン説明会に参加",`${firm}の社員に「${r.name}」の仕事内容と、評価される人の特徴を聞く`],
+      ["その後の数か月","経験を足して、話す内容を作る",`足りない力（${r.skills.join("・")}）を、授業・インターン・課外活動で補う。英日両方のレジュメを更新`],
+      [nxKnown?`${fmt(addD(toD(nx.start),-42))}〜`:"開催の2〜6週間前",`${nx.short}に事前応募`,`${nxLabel}の出展企業を確認し、${firm}が出るか、近い会社も含めて応募する`],
+      [nxKnown?fmt(toD(nx.start)):nx.when,"本番で内定へ",r.tip]]}
+  ];
+  if(f.kind==="intl"){
+    const visa=f.id==="asean"?"日本で働くには、働ける在留資格（技術・人文知識・国際業務など）の取得が必要。内定後に会社と手続きを進める":"内定後は、在留資格を「留学」から働ける資格（技術・人文知識・国際業務など）に変える手続きが必要。会社の人事と早めに進める";
+    routes[0].steps[0]=[routes[0].steps[0][0],`${f.site}で参加申し込み`,`日本語の履歴書と自己PRを用意。日本語のレベル（JLPTなど）をはっきり書く。${firm}の採用ページも見ておく`];
+    routes[0].steps[1][1]=`${firm}など参加企業を調べて応募`;
+    routes[0].steps[3]=[routes[0].steps[3][0],"内定・在留資格の変更",visa];
+    routes[1].steps[0]=[routes[1].steps[0][0],"日本語で1分の自己紹介を作る",`見られる力は${r.skills.join("・")}。母国と日本をつなげた経験を軸にする`];
+    routes[1].steps[3]=[routes[1].steps[3][0],"内定・在留資格の変更",visa];
+    routes[2].steps[1][2]=`足りない力（${r.skills.join("・")}）と日本語力を、授業・インターン・アルバイトで伸ばす。履歴書を更新`;
+  }
+  return `<div class="summary">
+      <h2><small>${esc(f.short)} › ${esc(firm)} ›</small>${esc(r.name)}</h2>
+      <dl class="facts">
+        <dt>会場</dt><dd>${esc(f.venue)}</dd>
+        <dt>日程</dt><dd>${esc(D)}${known?`（${countLabel(f).t}）`:""}</dd>
+        <dt>主催・登録先</dt><dd>${esc(f.site)}</dd>
+        <dt>見られる力</dt><dd>${r.skills.map(esc).join("・")}</dd>
+      </dl>
+    </div>
+    ${routesHTML(routes, soon?"B":"A", soon?"開催まで日が少ないので、こちらが現実的です。":"")}
+    <p class="note" style="margin-top:18px">日程と会場は2026年11月時点の公開情報です。応募締切や選考の進め方は会社ごとに違うため、${esc(f.site)}と各社の求人ページで最新情報を確認してください。</p>`;
+}
+function aStage(){
+  const f=FORUMS[as.forum], ind=aInd(), roles=AROLES[ind.id];
+  if(as.firm>=ind.firms.length) as.firm=0; if(as.role>=roles.length) as.role=0;
+  const firm=ind.firms[as.firm];
+  const names=[`${f.short}のタンス`,ind.name,firm,roles[as.role].name];
+  const heads=[`${f.short}の出展企業タンスを開ける`,`${ind.name}のタンス：会社を選ぶ`,`${firm}のタンス：役職を選ぶ`,"内定までのロードマップ"];
+  const listNote = f.kind==="intl" ? `${f.short}には中堅企業や地方の企業も多く出展します。ここでは参考として大手企業を並べています。出展企業は${f.site}の案内で確認してください。`
+    : f.list==="2026" ? "ボスキャリ2026の出展企業から大手を中心に抜粋しています。最新の出展状況はCareerForum.Netで確認してください。"
+    : `${f.short}の出展企業はまだ確認できていないため、参考としてボスキャリ2026の出展企業を入れています。最新の出展企業は${f.site}で確認してください。`;
+  let body;
+  if(as.lv===0) body=chestHTML("a",0,INDUSTRIES.map(x=>({key:x.id,val:x.id,label:x.name,count:`${x.firms.length}社`,size:x.size})),as.ind);
+  else if(as.lv===1) body=chestHTML("a",1,firmItems(ind.firms),String(as.firm))+`<p class="note" style="margin:14px auto 0;text-align:center">${listNote}</p>`;
+  else if(as.lv===2) body=chestHTML("a",2,roles.map((r,i)=>({key:i,val:String(i),label:r.name,sub:r.line,size:"full"})),String(as.role))+`<p class="note" style="margin:14px auto 0;text-align:center">役職は業界の代表例です。実際の募集職種はCareerForum.Netの求人ページで確認してください。</p>`;
+  else body=aResult();
+  return {crumbs:crumbsHTML("a",as.lv,names), head:`<div class="step-head"><span class="n">STEP ${as.lv+2}</span><h2>${esc(heads[as.lv])}</h2>${as.lv<3?'<span class="hint">引き出しを開ける</span>':""}</div>`, body, lv:as.lv};
+}
+
+/* ===== stage rendering with matryoshka transition ===== */
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function paint(scope, anim){
+  const v = scope==="d"?dStage():aStage();
+  const host = $(`#${scope}-stage`);
+  host.innerHTML = `${v.crumbs}${v.head}<div class="view${anim?" enter":""}">${v.lv<3?depthHTML(v.lv):""}${v.body}${backHTML(scope,v.lv)}</div>`;
+}
+let busy=false;
+function advance(scope, apply){
+  const host=$(`#${scope}-stage`), view=host.querySelector(".view");
+  if(busy) return; busy=true;
+  const finish=()=>{ apply(); save(); paint(scope,!reduce); busy=false; host.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"}); };
+  if(reduce||!view){ finish(); return; }
+  setTimeout(()=>{ view.classList.add("leave"); setTimeout(finish,430); },260);
+}
+
+function renderMode(){
+  document.querySelectorAll("[data-mode]").forEach(b=>b.setAttribute("aria-selected",b.dataset.mode===mode));
+  $("#mode-dom").hidden=mode!=="dom"; $("#mode-abr").hidden=mode!=="abr"; $("#profile").hidden=mode!=="dom";
+  $("#lede").textContent = mode==="dom"
+    ? "タンスの引き出しを開けると、中から次のタンスが出てきます。業界、会社、役職と開けていくと、インターンのロードマップが3通り出ます。"
+    : "海外の大学で学ぶ人も、日本で学ぶ外国人留学生も。地域からキャリアフォーラムを選び、出展企業のタンスを開けていく。業界、会社、役職と開けると、内定までのロードマップが3通り出ます。";
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  const d=t.dataset, S=d.scope;
+  if(d.mode){ mode=d.mode; renderMode(); save(); return; }
+  if(d.grade){ ds.grade=d.grade; renderChips(); if(ds.lv===3) paint("d"); save(); return; }
+  if(d.focus){ ds.focus=d.focus; renderChips(); if(ds.lv===3) paint("d"); save(); return; }
+  if(d.region){ as.region=d.region; as.forum=REGIONS.find(r=>r.id===as.region).forums[0]; renderRegions(); paint("a"); save(); return; }
+  if(d.forum){ as.forum=d.forum; renderRegions(); paint("a"); save(); return; }
+  if(d.lv!==undefined && S){ const o=S==="d"?ds:as; o.lv=+d.lv; paint(S,!reduce); save(); return; }
+  if(d.pick!==undefined && S){
+    const o=S==="d"?ds:as;
+    t.setAttribute("aria-pressed","true");
+    t.parentElement.querySelectorAll(".tdrawer").forEach(b=>{ if(b!==t) b.setAttribute("aria-pressed","false"); });
+    advance(S,()=>{
+      if(o.lv===0){ if(o.ind!==d.pick){ o.ind=d.pick; o.firm=0; o.role=0; } }
+      else if(o.lv===1){ if(o.firm!==+d.pick){ o.firm=+d.pick; o.role=0; } }
+      else if(o.lv===2){ o.role=+d.pick; }
+      o.lv=Math.min(3,o.lv+1);
+    });
+  }
+});
+renderChips(); renderRegions(); paint("d"); paint("a"); renderMode();
+</script>
+
+</body>
+</html>
